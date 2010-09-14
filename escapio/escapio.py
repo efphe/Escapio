@@ -1,14 +1,19 @@
-# Library which provides an escapio
-# connectivity library
+# Library which provides escapio connectivity
 
 import xmlrpclib
 _escapio_url= 'http://%s:%s@en.beta.eskabio.de/xmlrpc/pna'
 
+ESCAPIO_BOARDS= {
+ 'nf': 'NO_BOARD',
+ 'bb': 'BREAKFAST',
+ 'hb': 'HALF_BOARD',
+ 'fb': 'FULL_BOARD',
+ 'ai': 'ALL_INCLUSIVE ',
+}
+
 def getServer(u, p):
   surl= _escapio_url % (u, p)
-  print surl
-  s= xmlrpclib.Server(surl)
-  return s
+  return xmlrpclib.Server(surl)
 
 class Escapio:
   def __init__(self, user, password, hid, initserver= 1, lang= 'en'):
@@ -20,28 +25,58 @@ class Escapio:
     if initserver:
       self.init_server()
 
+  def extractTranslation(self, d):
+    t= d.pop('translations')
+    n= t.get(self.lang)
+    if isinstance(n, dict):
+      n= n['name']
+    if n:
+      d['name']= n
+      return
+    for k,v in t.items():
+      if v['name']:
+        d['name']= v['name']
+        return d
+
   def init_server(self):
     self.server= getServer(self.user, self.password)
 
   def getRoomTypes(self):
     rtypes= self.server.info.getRoomTypes()
-    res= []
     for r in rtypes:
-      res.append({'name': r['translations'][self.lang]['name'], 'id': r['id']})
-    return res
+      self.extractTranslation(r)
+    return rtypes
 
   def getRooms(self):
     rooms= self.server.pna.getRooms({'hotel_id': self.hotel})
     for r in rooms:
-      t= r.pop('translations')
-      rname= t[self.lang]['name']
-      if not rname:
-        for k,v in t.items():
-          if v['name']: 
-            rname= v['name']
-            break
-      r['name']= rname
+      self.extractTranslation(r)
     return rooms
+
+  def getRates(self, newrate= None):
+    rates= self.server.pna.getRates({'hotel_id': self.hotel})
+    if not rates and newrate:
+      d= {
+          'hotel_id': self.hotel_id,
+          'translations': {self.lang: newrate},
+          }
+      rates= [self.server.pna.setRate(d)]
+    for r in rates:
+      self.extractTranslation(r)
+    return rates
 
   def setRoom(self, rtype, baseavail, max_adults, max_children, max_babies):
     pass
+
+  def setAllocation(d, board= 'nb'):
+    """ d is a dictionary like this:
+      {
+        'date_start': '%Y-%m-%d, 
+        'date_end': '%Y-%m-%d,
+        'rate_id':
+        'room_id': 
+        'contingents': 
+        'contingents_booked':
+        'price':
+      }
+    """
