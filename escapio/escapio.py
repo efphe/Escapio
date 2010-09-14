@@ -68,7 +68,7 @@ class Escapio:
   def setRoom(self, rtype, baseavail, max_adults, max_children, max_babies):
     pass
 
-  def setAllocation(d, board= 'nb'):
+  def setAllocation(self, d, board= 'nf'):
     """ d is a dictionary like this:
       {
         'date_start': '%Y-%m-%d, 
@@ -82,3 +82,5 @@ class Escapio:
     """
     newd= {'board': board, 'hotel_id': self.hotel, 'type': 'allocation'}
     d.update(newd)
+    print d
+    return self.server.pna.setAllocationsByPeriod(d)
