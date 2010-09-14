@@ -80,3 +80,5 @@ class Escapio:
         'price':
       }
     """
+    newd= {'board': board, 'hotel_id': self.hotel, 'type': 'allocation'}
+    d.update(newd)
