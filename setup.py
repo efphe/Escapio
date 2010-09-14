@@ -4,6 +4,6 @@ setup(name='Escapyo',
       author='Yellow at wubook dot net',
       package_dir={'': 'escapyo'},
       url= 'http://en.wubook.net/',
-      packages=['escapyo'],
+      packages=[''],
       )
 
