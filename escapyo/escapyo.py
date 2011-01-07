@@ -1,7 +1,6 @@
 # Library which provides escapio connectivity
 
 import xmlrpclib
-_escapio_url= 'http://%s:%s@en.beta.eskabio.de/xmlrpc/pna'
 
 ESCAPIO_BOARDS= {
  'nf': 'NO_BOARD',
@@ -11,11 +10,12 @@ ESCAPIO_BOARDS= {
  'ai': 'ALL_INCLUSIVE ',
 }
 
-def getServer(u, p):
-  surl= _escapio_url % (u, p)
+def getServer(url, u, p):
+  surl= url % (u, p)
   return xmlrpclib.Server(surl)
 
 class Escapio:
+  _url= '_connection_url'
   def __init__(self, user, password, hid, initserver= 1, lang= 'en'):
     self.hotel= hid
     self.user= user
@@ -39,7 +39,7 @@ class Escapio:
         return d
 
   def init_server(self):
-    self.server= getServer(self.user, self.password)
+    self.server= getServer(self._url, self.user, self.password)
 
   def getRoomTypes(self):
     rtypes= self.server.info.getRoomTypes()
